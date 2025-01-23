@@ -1,0 +1,39 @@
+MyBank - Gestion des Dépenses
+MyBank est une application web qui permet aux utilisateurs de gérer leurs dépenses. Elle est composée d'un frontend React et d'un backend Symfony.
+
+Fonctionnalités
+Ajouter, modifier, supprimer et afficher les opérations (dépenses).
+
+Interface utilisateur moderne et réactive.
+
+API RESTful pour gérer les opérations.
+
+Installation
+Cloner le projet :
+
+bash
+Copy
+git clone https://github.com/A/mybank.git
+cd mybank
+Démarrer les conteneurs Docker :
+
+bash
+Copy
+docker-compose up -d
+Accéder à l'application :
+
+Frontend : http://localhost:3000
+
+Backend : http://localhost:8000
+
+Technologies
+Frontend : React
+
+Backend : Symfony
+
+Base de Données : MySQL
+
+Conteneurisation : Docker
+
+Auteur
+ADIL GHAZAL
