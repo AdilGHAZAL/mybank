@@ -1,39 +1,194 @@
-MyBank - Gestion des Dépenses
-MyBank est une application web qui permet aux utilisateurs de gérer leurs dépenses. Elle est composée d'un frontend React et d'un backend Symfony.
+# Projet React & Symfony avec Docker
 
-Fonctionnalités
-Ajouter, modifier, supprimer et afficher les opérations (dépenses).
+Ce projet contient une application web de gestion des dépenses personnelles composée de deux parties :
 
-Interface utilisateur moderne et réactive.
+- **Frontend (React)** : Interface utilisateur moderne construite avec React et Vite
+- **Backend (Symfony)** : API RESTful développée avec Symfony et API Platform
 
-API RESTful pour gérer les opérations.
+## Structure du projet
 
-Installation
-Cloner le projet :
+Le projet est structuré de la manière suivante :
 
-bash
-Copy
+```
+/myBank
+ ├── /mybank-frontend    # Code source du frontend React
+ ├── /mybank-backend     # Code source de l'API Symfony
+ ├── /docker-compose.yml # Orchestration des services
+ ├── /Jenkinsfile        # Pipeline CI/CD Jenkins
+ └── /README             # Documentation du projet
+```
+
+## Prérequis
+
+Avant de démarrer, assurez-vous d'avoir installé Docker et Docker Compose sur votre machine.
+
+- [Docker](https://docs.docker.com/get-docker/) : Installation Docker
+- [Docker Compose](https://docs.docker.com/compose/install/) : Installation Docker Compose
+
+## Installation
+
+### 1. Cloner le dépôt
+
+Clonez ce projet sur votre machine locale :
+
+```bash
 git clone https://github.com/AdilGHAZAL/mybank.git
 cd mybank
-Démarrer les conteneurs Docker :
+```
 
-bash
-Copy
+### 2. Accéder à l'application
+
+#### 2.1 Backend (Symfony)
+
+Naviguez vers le répertoire du projet :
+
+```bash
+cd mybank-backend
+```
+
+Configurez les variables d'environnement (.env) :
+
+```env
+APP_ENV=dev
+APP_SECRET=your-secret-key
+DATABASE_URL="mysql://root:password@mysql:3306/mybank?serverVersion=8.0&charset=utf8mb4"
+CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
+JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
+JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
+JWT_PASSPHRASE=your-passphrase
+```
+
+Installez les dépendances :
+
+```bash
+composer install
+```
+
+Générez les clés JWT :
+
+```bash
+php bin/console lexik:jwt:generate-keypair
+```
+
+Construisez et démarrez les conteneurs :
+
+```bash
 docker-compose up -d
-Accéder à l'application :
+```
 
-Frontend : http://localhost:3000
+Exécutez les migrations :
 
-Backend : http://localhost:8000
+```bash
+docker exec -it mybank-backend-php bash
+php bin/console d:m:m
+```
 
-Technologies
-Frontend : React
+Lancez les tests :
 
-Backend : Symfony
+```bash
+php bin/phpunit
+```
 
-Base de Données : MySQL
+Votre API devrait être accessible sur **localhost:8000**
 
-Conteneurisation : Docker
+#### 2.2 Frontend (React)
 
-Auteur
-ADIL GHAZAL
+Naviguez vers le répertoire frontend :
+
+```bash
+cd mybank-frontend
+```
+
+Configurez les variables d'environnement (.env.local) :
+
+```env
+VITE_API_BASE_URL=http://localhost:8000/api
+```
+
+Construisez l'image Docker :
+
+```bash
+docker build -t mybank-front .
+```
+
+Lancez le conteneur :
+
+```bash
+docker run -p 3000:3000 --name mybank-front-container mybank-front:latest
+```
+
+Lancez les tests :
+
+```bash
+npm install
+npm run build  # Test de build pour validation
+```
+
+Votre application devrait être accessible sur **localhost:3000**
+
+## CI/CD avec Jenkins
+
+### Configuration de Jenkins
+
+1. **Installez Jenkins** sur votre machine ou utilisez une instance Jenkins existante :
+
+```bash
+docker run -d \
+  --name jenkins \
+  -p 8080:8080 -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts
+```
+
+2. **Créez un nouveau pipeline** dans Jenkins
+
+3. **Configurez le pipeline** pour utiliser le fichier `Jenkinsfile` fourni dans le projet
+
+4. **Variables d'environnement requises** :
+
+```env
+APP_ENV=${APP_ENV}
+APP_SECRET=${APP_SECRET}
+DATABASE_URL=${DATABASE_URL}
+CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN}
+JWT_SECRET_KEY=${JWT_SECRET_KEY}
+JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
+JWT_PASSPHRASE=${JWT_PASSPHRASE}
+VITE_API_BASE_URL=${VITE_API_BASE_URL}
+REMOTE_USER=${REMOTE_USER}
+REMOTE_HOST=${REMOTE_HOST}
+DOCKER_PASSWORD=${DOCKER_PASSWORD}
+DOCKERHUB_USERNAME=${DOCKERHUB_USERNAME}
+AGENT_DOCKER=${AGENT_DOCKER}
+```
+
+5. **Créez les agents Jenkins** :
+   - Agent Docker pour la construction d'images
+   - Agent Frontend pour les tâches React/Node.js
+   - Agent Backend pour les tâches Symfony/PHP
+
+6. **Configurez les credentials** nécessaires :
+
+```groovy
+stage('Deploy') {
+   withCredentials([
+   sshUserPrivateKey(credentialsId: 'ssh-root', keyFileVariable: 'SSH_KEY')
+])
+```
+
+7. **Configurez les déclencheurs** pour automatiser le pipeline :
+   - Utilisez le webhook de GitHub pour déclencher le pipeline à chaque push
+   - Utilisez ngrok pour exposer le port 8080 de Jenkins si nécessaire
+
+## Technologies
+
+- **Frontend** : React 18, Vite, TypeScript, Tailwind CSS
+- **Backend** : Symfony 6, API Platform, PHP 8.1
+- **Base de données** : MySQL 8.0
+- **Cache** : Redis
+- **Conteneurisation** : Docker & Docker Compose
+- **CI/CD** : Jenkins Pipeline
+
+## Auteur
+
+**ADIL GHAZAL**
