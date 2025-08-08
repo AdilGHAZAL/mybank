@@ -121,7 +121,7 @@ Lancez les tests :
 
 ```bash
 npm install
-npm run build  # Test de build pour validation
+npm run build  
 ```
 
 Votre application devrait être accessible sur **localhost:3000**
