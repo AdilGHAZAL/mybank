@@ -86,7 +86,7 @@ php bin/console d:m:m
 Lancez les tests :
 
 ```bash
-php bin/phpunit
+docker exec -it mybank-backend php bin/phpunit
 ```
 
 Votre API devrait être accessible sur **localhost:8000**
@@ -120,8 +120,7 @@ docker run -p 3000:3000 --name mybank-front-container mybank-front:latest
 Lancez les tests :
 
 ```bash
-npm install
-npm run build  
+docker exec -it mybank-front-container npm run test:run
 ```
 
 Votre application devrait être accessible sur **localhost:3000**
@@ -186,9 +185,11 @@ stage('Deploy') {
 - **Backend** : Symfony 6, API Platform, PHP 8.1
 - **Base de données** : MySQL 8.0
 - **Cache** : Redis
+- **Tests Frontend** : Vitest, Testing Library React
+- **Tests Backend** : PHPUnit, Symfony PHPUnit Bridge
 - **Conteneurisation** : Docker & Docker Compose
 - **CI/CD** : Jenkins Pipeline
 
 ## Auteur
 
-**ADIL GHAZAL**
+ADIL GHAZAL
