@@ -19,7 +19,7 @@ const Dashboard: React.FC = () => {
           getCategories(),
         ]);
         
-        // Ensure data is always arrays
+      
         const safeOperations = Array.isArray(operationsData) ? operationsData : [];
         const safeCategories = Array.isArray(categoriesData) ? categoriesData : [];
         
@@ -35,7 +35,7 @@ const Dashboard: React.FC = () => {
         if (error && typeof error === 'object' && 'response' in error) {
           const axiosError = error as any;
           if (axiosError.response?.status === 401) {
-            console.warn('Authentication required for dashboard data. User may need to log in.');
+            console.warn('Authentication required for dashboard data. User may need to log in.!');
             // The axios interceptor will handle the redirect to login
           }
         }
