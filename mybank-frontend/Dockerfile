@@ -1,29 +1,36 @@
-# Étape 1: Utiliser une image de base Node.js
-FROM node:18 AS build
+# Production Multi-stage Dockerfile for React frontend
+# Build stage
+FROM node:20-alpine as build
 
-# Étape 2: Définir le répertoire de travail dans le conteneur
 WORKDIR /app
 
-# Étape 3: Copier les fichiers de configuration du projet
-COPY package.json yarn.lock* ./
+# Copy package files
+COPY package.json package-lock.json* ./
 
-# Étape 4: Installer les dépendances
-RUN yarn install
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci
 
-# Étape 5: Copier le reste des fichiers du projet
+# Copy source code
 COPY . .
 
-# Étape 6: Construire l'application React
-RUN yarn build
+# Build the application
+RUN npm run build
 
-# Étape 7: Utiliser une image légère pour servir l'application
-FROM nginx:alpine
+# Production stage
+FROM nginx:alpine as production
 
-# Étape 8: Copier les fichiers construits dans le conteneur Nginx
+# Copy custom nginx configuration
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy built application from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Étape 9: Exposer le port 80
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost/ || exit 1
+
+# Expose port 80
 EXPOSE 80
 
-# Étape 10: Démarrer Nginx
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]

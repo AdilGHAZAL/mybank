@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: mybank-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mybank
+      MYSQL_USER: mybank_user
+      MYSQL_PASSWORD: mybank_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mybank-backend/docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - mybank-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Backend PHP-FPM service
+  backend:
+    build:
+      context: ./mybank-backend
+      dockerfile: Dockerfile
+      target: backend
+    container_name: mybank-backend
+    volumes:
+      - backend_cache:/var/www/html/var/cache
+      - backend_logs:/var/www/html/var/log
+    environment:
+      - DATABASE_URL=mysql://root:root@mysql:3306/mybank?serverVersion=8.0&charset=utf8mb4
+      - JWT_SECRET_KEY=your-secret-key-here-make-it-long-and-secure-for-production
+      - CORS_ALLOW_ORIGIN=^https?://(localhost|127\.0\.0\.1|frontend)(:[0-9]+)?$
+      - APP_ENV=prod
+      - APP_DEBUG=0
+    networks:
+      - mybank-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # Backend Nginx service
+  backend-nginx:
+    build:
+      context: ./mybank-backend
+      dockerfile: Dockerfile
+      target: nginx
+    container_name: mybank-backend-nginx
+    ports:
+      - "8000:80"
+    networks:
+      - mybank-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./mybank-frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: mybank-frontend
+    ports:
+      - "3000:80"
+    networks:
+      - mybank-network
+    depends_on:
+      - backend-nginx
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis cache service
+  redis:
+    image: redis:alpine
+    container_name: mybank-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mybank-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mysql_data:
+  redis_data:
+  backend_cache:
+  backend_logs:
+
+networks:
+  mybank-network:
+    driver: bridge

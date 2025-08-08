@@ -1,15 +1,7 @@
 // OperationList.tsx
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getOperations, deleteOperation } from "../services/api";
-
-interface Operation {
-  id: number;
-  label: string;
-  amount: number;
-  date: string;
-  category: string;
-}
+import { getOperations, deleteOperation, Operation } from "../services/api";
 
 const OperationList: React.FC = () => {
   const [operations, setOperations] = useState<Operation[]>([]);
@@ -63,13 +55,21 @@ const OperationList: React.FC = () => {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-gray-200">
             {operations.map((operation) => (
               <tr key={operation.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{operation.label}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{operation.amount}€</td>
-                <td className="px-6 py-4 whitespace-nowrap">{operation.date}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{operation.category}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {operation.label}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  ${operation.amount.toFixed(2)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {new Date(operation.date).toLocaleDateString()}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {operation.category?.title || 'No Category'}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <Link
                     to={`/edit-operation/${operation.id}`}

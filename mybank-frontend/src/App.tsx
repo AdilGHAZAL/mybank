@@ -1,22 +1,64 @@
 // App.tsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
+
+// Import new atomic design pages
+import Dashboard from "./pages/Dashboard";
+import Operations from "./pages/Operations";
+import CreateOperation from "./pages/CreateOperation";
+import EditOperation from "./pages/EditOperation";
+import Categories from "./pages/Categories";
+import Analytics from "./pages/Analytics";
+
+// Import authentication components
 import Login from "./components/Login";
-import OperationList from "./components/OperationList";
-import CreateOperation from "./components/CreateOperation";
-import EditOperation from "./components/EditOperation";
+import Register from "./pages/Register";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App: React.FC = () => {
   return (
     <Router>
-      <Navbar />
       <Routes>
+        {/* Public Authentication Routes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/operations" element={<OperationList />} />
-        <Route path="/create-operation" element={<CreateOperation />} />
-        <Route path="/edit-operation/:id" element={<EditOperation />} />
-        <Route path="/" element={<div>Welcome to MyBank!</div>} />
+        <Route path="/register" element={<Register />} />
+        
+        {/* Protected Routes - Require Authentication */}
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/operations" element={
+          <ProtectedRoute>
+            <Operations />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/create-operation" element={
+          <ProtectedRoute>
+            <CreateOperation />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/edit-operation/:id" element={
+          <ProtectedRoute>
+            <EditOperation />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/categories" element={
+          <ProtectedRoute>
+            <Categories />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/analytics" element={
+          <ProtectedRoute>
+            <Analytics />
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );

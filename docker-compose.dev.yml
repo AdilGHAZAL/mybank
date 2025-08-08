@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # Development overrides
+  backend-php:
+    environment:
+      - APP_ENV=dev
+      - APP_DEBUG=1
+    volumes:
+      - ./mybank-backend:/var/www/html
+      - ./mybank-backend/var:/var/www/html/var
+    command: php-fpm
+
+  frontend:
+    build:
+      context: ./mybank-frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./mybank-frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api
+    command: npm run dev -- --host 0.0.0.0
+
+  mysql:
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ""  # No password for development

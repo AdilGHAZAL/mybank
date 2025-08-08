@@ -19,7 +19,7 @@ const EditOperation: React.FC = () => {
         setLabel(operation.label);
         setAmount(operation.amount);
         setDate(operation.date);
-        setCategory(operation.category);
+        setCategory(operation.category?.id?.toString() || '');
       } catch (error) {
         console.error("Failed to fetch operation:", error);
       }
@@ -31,7 +31,7 @@ const EditOperation: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateOperation(parseInt(id!), { label, amount, date, category });
+      await updateOperation(parseInt(id!), { label, amount, date, category: parseInt(category) });
       navigate("/operations"); // Redirect to the operations list after update
     } catch (error) {
       console.error("Failed to update operation:", error);
