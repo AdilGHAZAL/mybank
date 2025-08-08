@@ -7,11 +7,11 @@ pipeline {
             agent { label 'front-agent' }
             stage('Clone Frontend Repository') {
     
-   	 	git branch: 'main', url: 'https://github.com/AdilGHAZAL/mybank.git'
+   	 	git branch: 'master', url: 'https://github.com/AdilGHAZAL/mybank.git'
 		}
 
 		dir('mybank-frontend') 	{
-	    sh "echo 'NEXT_PUBLIC_API_BASE_TEST_URL=${NEXT_PUBLIC_API_BASE_TEST_URL}' > .env"
+	    sh "echo 'VITE_API_BASE_URL=${VITE_API_BASE_URL}' > .env"
 	    sh 'cat .env'
 	    sh 'npm install dotenv'  // si vraiment nécessaire, sinon déjà dans package.json
 	    sh 'npm install'
@@ -20,9 +20,9 @@ pipeline {
         }
 
         stage('Build & Push Frontend Docker Image') {
-    git branch: 'main', url: 'https://github.com/AdilGHAZAL/mybank.git'
+    git branch: 'master', url: 'https://github.com/AdilGHAZAL/mybank.git'
     dir('mybank-frontend') {
-        sh "echo 'NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}' > .env"
+        sh "echo 'VITE_API_BASE_URL=${VITE_API_BASE_URL}' > .env"
         sh "docker build .  -t ${DOCKERHUB_USERNAME}/mybank_front:latest"
         sh "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKER_PASSWORD}"
         sh "docker push ${DOCKERHUB_USERNAME}/mybank_front:latest"
@@ -62,7 +62,7 @@ stage('Deploy Frontend') {
         }
 
         stage('Test Backend') {
-	   sh 'php bin/phpunit"'
+	   sh 'php bin/phpunit'
         }
 
         stage('Backend build image Pipeline') {
